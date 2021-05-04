@@ -1,5 +1,7 @@
 package com.danielthedev.matrices;
 
+import java.util.Arrays;
+
 public class Matrix {
 
 	private final int rows;
@@ -12,6 +14,24 @@ public class Matrix {
 		this.matrix = new double[rows][columns];
 	}
 	
+	public Matrix(double[][] matrix) {
+		int[] dimensions = getDimensions(matrix);
+		
+		this.rows = dimensions[0];
+		this.columns = dimensions[1];
+		this.matrix = matrix;
+	}
+	
+	public void setMatrix(double[][] matrix) {
+		int[] dimensions = getDimensions(matrix);
+		if(dimensions[0] != this.rows || dimensions[1] != this.columns) throw new UnsupportedOperationException("Matrix must have the same dimensions");
+		for(int row = 0; row < this.rows; row++) {
+			for(int column = 0; column < this.columns; column++) {
+				this.matrix[row][column] = matrix[row][column];
+			}
+		}
+	}
+	
 	public double[][] getMatrixs() {
 		return this.matrix;
 	}
@@ -22,13 +42,21 @@ public class Matrix {
 		
 		Matrix matrix = new Matrix(this.rows, b.columns);
 		
+		
+		for(int i = 0; i < matrix.rows; i++) {
+			for(int j = 0; j < matrix.columns; j++) {
+				for(int k = 0; k < this.columns; k++) {
+					matrix.matrix[i][j] += this.matrix[i][k] * b.matrix[k][j];
+				}
+			}
+		}
 		return matrix;
 	}
 	
 	public Matrix multiply(double multiplier) {
 		for(int row = 0; row < rows; row++) {
 			for(int column = 0; column < columns; column++) {
-				matrix[row][column] = matrix[row][column] * multiplier;
+				matrix[row][column] *= multiplier;
 			}
 		}
 		return this;
@@ -46,6 +74,34 @@ public class Matrix {
 	
 	public Matrix substract(Matrix m) {
 		return this.add(m.multiply(-1));
+	}
+	
+	public static int[] getDimensions(double[][] matrix) {
+		if(matrix == null) throw new NullPointerException("Matrix must not be null");
+		int[] dimensions = new int[2];
+		dimensions[0] = matrix.length;
+		if(matrix.length == 0) throw new UnsupportedOperationException("Matrix must have at least one row");
+		
+		double[] row;
+		for(int x = 0; x < matrix.length; x++) {
+			row = matrix[x];
+			if(row == null) throw new NullPointerException("row must not be null");
+			else if(row.length == 0) throw new UnsupportedOperationException("Matrix row must have at least one column");
+			if(x == 0) {
+				dimensions[1] = row.length;
+			} else if(dimensions[1] != row.length) {
+				throw new UnsupportedOperationException("Matrix columns dimensions are not equal");
+			}
+		}
+		return dimensions;
+	}
+	
+	public static Matrix matrix(double[]... rows) {
+		return new Matrix(rows);
+	}
+	
+	public static double[] row(double... columns) {
+		return columns;
 	}
 	
 	@Override
@@ -73,7 +129,7 @@ public class Matrix {
 			
 			double[] matrixRow = matrix[row];
 			
-			builder.append("|");
+			builder.append("| ");
 			
 			for(int column = 0; column < matrixRow.length; column++) {
 				String item = Double.toString(matrixRow[column]);
@@ -87,7 +143,7 @@ public class Matrix {
 				builder.append(item).append(Matrix.getChars(' ', columnLenght-item.length()));
 				if(column + 1 < matrixRow.length) builder.append("  ");
 			}
-			builder.append("|").append("\r\n");
+			builder.append(" |").append("\r\n");
 		}
 		return builder.toString();
 	}
